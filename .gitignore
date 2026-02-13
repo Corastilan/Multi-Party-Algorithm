@@ -1,0 +1,8 @@
+*.DS_STORE
+directional_protocol
+
+*.o
+html/
+Doxyfile
+latex/
+xml/
