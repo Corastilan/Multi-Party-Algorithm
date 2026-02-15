@@ -1,0 +1,94 @@
+\documentclass{article}
+
+\usepackage{algorithm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{geometry}
+\usepackage{enumitem}
+\geometry{margin=1in}
+
+\title{Adaptive Boundary Protocol}
+\author{(Will be filled in later)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Hybrid Directional with Adaptive Boundaries}
+
+Combine directional assignment with dynamic boundary adjustment based on usage patterns.
+
+\subsection{Protocol Description}
+
+\textbf{Initial Setup:}
+\begin{itemize}
+    \item Alice: pads $[1, \lfloor n/3 \rfloor]$
+    \item Bob: pads $[\lfloor n/3 \rfloor + d + 1, \lfloor 2n/3 \rfloor]$
+    \item Charlie: pads $[\lfloor 2n/3 \rfloor + d + 1, n]$
+    \item Each party uses pads sequentially within their region
+\end{itemize}
+
+\textbf{Adaptive Borrowing:} When party $P$ exhausts their region:
+\begin{itemize}
+    \item $P$ can "borrow" from an adjacent idle region if the gap constraint is satisfied
+    \item Borrowing extends $P$'s region by $k$ pads (e.g., $k = d$)
+    \item Borrowed regions are marked to prevent conflicts
+\end{itemize}
+
+
+\begin{algorithm}
+\caption{Adaptive Boundary Protocol}
+\begin{algorithmic}[1]
+\State \textbf{State:} $region\_start[P]$, $region\_end[P]$, $next\_pad[P]$
+\State
+\Procedure{SendMessage}{$P$, $message$}
+    \If{$next\_pad[P] \leq region\_end[P]$}
+        \If{GapConstraintSatisfied($P$, $next\_pad[P]$)}
+            \State UsePad($P$, $next\_pad[P]$, $message$)
+            \State $next\_pad[P] \gets next\_pad[P] + 1$
+            \State \Return \textsc{Success}
+        \EndIf
+    \Else
+        \State \Comment{Try to borrow from adjacent region}
+        \If{CanBorrow($P$)}
+            \State ExtendRegion($P$, $k$)
+            \State Retry SendMessage($P$, $message$)
+        \Else
+            \State \Return \textsc{Fail}
+        \EndIf
+    \EndIf
+\EndProcedure
+\State
+\Procedure{CanBorrow}{$P$}
+    \State Find adjacent party $Q$ with unused pads
+    \State \Return ($region\_end[P] + d + k < next\_pad[Q]$)
+\EndProcedure
+\State
+\Procedure{ExtendRegion}{$P$, $k$}
+    \State $region\_end[P] \gets region\_end[P] + k$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Analysis}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item Adapts to actual usage patterns
+    \item Can perform better than $\frac{2n}{3}$ waste when parties have unequal sending rates
+    \item Runtime: $O(1)$ per message in typical case
+\end{itemize}
+
+\textbf{Waste Analysis:}
+\begin{itemize}
+    \item Best case (equal sending): waste $\approx 2d$ pads (for gaps)
+    \item Worst case (only one sender): waste $< \frac{2n}{3}$ due to borrowing
+    \item Expected waste depends on borrowing efficiency
+\end{itemize}
+
+\section{Algorithm}
+
+\end{document}
