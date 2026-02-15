@@ -6,3 +6,6 @@ html/
 Doxyfile
 latex/
 xml/
+crypto/
+__pycache__/
+.pytest_cache
