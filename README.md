@@ -1,122 +1,83 @@
-# Simple test
+# Cooperative Global Ring: Asynchronous OTP Simulation
 
-This is a C++ implementation of Algorithm 1 from the PDF. This is a simple test as to what it looks like. Note that I use C++ for practice. 
-The final algorithm will be constructed in Python. This is just an overview.
+This project implements a **Distributed One-Time Pad (OTP)** protocol designed for a circular buffer (Ring) of cryptographic material. The simulation demonstrates how multiple parties can securely share a finite sequence of random pads in an asynchronous network environment.
 
-## Overview
-
-The protocol enables three parties (Alice, Bob, and Charlie) to send encrypted messages using one-time pads while:
-- Ensuring perfect secrecy (each pad used exactly once)
-- Maintaining a gap constraint to prevent collision
-- Minimizing wasted pads through directional assignment
-
-## Architecture
-
-The implementation is modularized into several components:
-
-### Core Modules
-
-1. **types.h** - Common type definitions
- 
-2. **protocol_state.h/cpp** - State management
- 
-3. **directional_protocol.h/cpp** - Main protocol logic
-
-4. **main.cpp** - Main program
-
-## Protocol Design
-
-### Party Assignments
-- **Alice**: Uses pads from index 1, incrementing (1, 2, 3, ...)
-- **Bob**: Uses pads from index n, decrementing (n, n-1, n-2, ...)
-- **Charlie**: Starts at ⌊n/2⌋, alternates direction (+1, -1, +1, -1, ...)
-
-### Gap Constraint
-A party P can only use their next pad if:
-```
-min_{Q ≠ P} |next_pad(P) - last_used_pad(Q)| > d
-```
-where d is the maximum number of undelivered messages in the network.
-
-## Building and Running
+## 🚀 How to Test
 
 ### Prerequisites
-- C++17 compatible compiler 
-- Make (optional, for using Makefile)
+* **Python 3.8+**
+* No external dependencies (uses standard `random` and `statistics` libraries).
 
-### Compilation
+### Execution
+1. Save the provided script as `ring_sim.py`.
+2. Run the script via your terminal or IDE:
+   ```bash
+   python ring_sim.py
+   ```
+3. The script will iterate through two configurations ($M=3$ and $M=4$ parties) and test every possible number of active senders ($x$).
 
-Using Make:
-```bash
-make
-```
-To remove object files, simply run:
-```bash
-make clean
-```
+### Interpreting Results
+* **S.x**: The scenario where $x$ parties are actively trying to send data.
+* **Avg Wasted Pads**: The count of pads remaining in the ring that were never used for encryption when the system reached a deadlock.
+* **Utilization %**: The efficiency of the protocol. With $N=2000$ and $D=15$, you should see utilization stay consistently high (~97%) across all scenarios.
 
-### Running
+---
 
-```bash
-./directional_protocol
-```
+## 🛠 Functionalities
 
-Or using Make:
-```bash
-make run
-```
+### 1. Asynchronous Network Simulation
+The `AsynchronousNetwork` class simulates real-world network jitter. 
+* **Broadcast Latency**: Messages (position updates) are delayed by a random factor ($0$ to $D$ ticks).
+* **Stale Information**: Parties must make movement decisions based on their `view_of_others`, which represents where they *think* their neighbors are, not where they actually are.
 
-## Example Output
+### 2. The Cooperative "Drift"
+This is the core innovation of the protocol. It allows the ring to rotate even when only one person is talking:
+* **Passive Traversal**: If a party encounters a pad already used by someone else, they "drift" (advance their pointer) without consuming new material.
+* **Yielding Territory**: Silent parties jump forward to maintain the safety buffer, effectively yielding the rest of the ring to active senders.
 
-The program runs three test scenarios:
+### 3. Collision Avoidance
+The protocol enforces a **Safety Invariant ($D$)**. No party will move within $D$ pads of a neighbor's last known position. This $D$ buffer acts as a "crumple zone" that absorbs network latency, preventing two parties from ever landing on the same pad index.
 
-1. **Sequential sends** - Each party sends one message
-2. **Multiple sends** - Tests gap constraint with multiple messages
-3. **Gap violation** - Demonstrates constraint enforcement
+---
 
-Sample output:
-```
-=== Protocol State ===
-Total pads: 100
-Max undelivered (d): 5
-Last used pads:
-  Alice:   0
-  Bob:     101
-  Charlie: 50 (direction: +)
-======================
+## 💻 Code Walkthrough
 
-Alice successfully sent message using pad 1
-  Decrypted: "Hello from Alice!"
-```
+### 1. Setup & Initialization
+The ring is initialized with $N$ pads. Parties are placed at equal intervals (e.g., $0, 500, 1000, 1500$). 
+* **`active_ids`**: Parties assigned to send data.
+* **`burned`**: A global set tracking which indices have been used for XOR encryption.
 
-## Configuration
+### 2. The Decision Engine: `get_move_status`
+Every tick, each party evaluates the pad immediately in front of them ($Index + 1$):
+* **Gap Check**: Is $(Neighbor\_Pos - My\_Pos) \pmod N > D$?
+* **Status Assignment**: 
+    * If the gap is safe and the pad is fresh $\rightarrow$ `data` (Ready to encrypt).
+    * If the gap is safe but the pad is used $\rightarrow$ `drift` (Ready to skip).
+    * If the gap is unsafe $\rightarrow$ `None` (Must wait).
 
-Key parameters can be adjusted in `main.cpp`:
-- `TOTAL_PADS` (n) - Total number of one-time pads available
-- `MAX_UNDELIVERED` (d) - Maximum undelivered messages constraint
 
-## Performance Analysis
 
-From the PDF analysis:
-- **Best case waste**: ~d pads (when all parties send equally)
-- **Worst case waste**: ~2n/3 pads (when only one party sends)
-- **Time complexity**: O(1) per message send operation
+### 3. The Execution Loop
+The `while` loop processes moves based on priority:
+1. **Active Senders**: Attempt to move. If the status is `data`, they increment `pads_used` and add the index to the `burned` set.
+2. **Silent Jumpers**: If active senders are blocked, silent parties move to clear the path. They only ever "drift."
+3. **Broadcast**: Any move triggers `network.send_broadcast`, which eventually updates the `view_of_others` for all other parties after a delay.
 
-## Thread Safety
 
-The `ProtocolState` class uses mutex locks to ensure thread-safe access to shared state, making the implementation suitable for concurrent environments.
 
-## Limitations
+### 4. Termination (The Clinch)
+The simulation stops when no party can move and the network queue is empty.
+* **S.1 (Solo)**: The sender "pushes" everyone else until they are bunched up, leaving only $M$ x $D$-sized gap.
+* **S.4 (Full)**: All parties are spaced out by exactly $D$ pads.
 
-- This implementation uses simplified XOR encryption for demonstration
-- In production, secure key management and storage would be required
-- The pad generation uses pseudo-random numbers (not cryptographically secure)
 
-## Future Enhancements
 
-Possible improvements:
-- Implement Idea 2 (Round-Robin) and Idea 3 (Adaptive Boundaries)
-- Add network simulation for message delivery
-- Implement proper cryptographic pad generation
-- Add metrics collection for waste analysis
-- Support for more than 3 parties
+---
+
+## 🛡 Security Analysis
+
+### Perfect Secrecy
+By checking `next_idx not in burned` before every `data` move, the protocol guarantees that no cryptographic pad is ever used twice. This preserves the core requirement of the One-Time Pad.
+
+### Race Condition Protection
+Because the safety gap $D$ is equal to the maximum network delay, it is mathematically impossible for a party to "catch up" to a neighbor before receiving that neighbor's most recent position broadcast. This ensures **Mutual Exclusion** over the pad indices.
