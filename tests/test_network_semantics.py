@@ -1,5 +1,10 @@
+import os
 import random
-from ring_sim import AsynchronousNetwork, RingParty
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.ring_sim import AsynchronousNetwork, RingParty
+
 
 def test_network_delivery_time_and_no_self_update(monkeypatch):
     # Force randint(0, d_delay) to always return d_delay (max delay)

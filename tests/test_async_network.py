@@ -1,4 +1,8 @@
-from ring_sim import AsynchronousNetwork, RingParty, run_scenario
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.ring_sim import AsynchronousNetwork, RingParty, run_scenario
 
 
 def test_modular_arithmetic_gap():

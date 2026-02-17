@@ -1,5 +1,10 @@
+import os
 import random
-from ring_sim import run_scenario
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.ring_sim import run_scenario
+
 
 def test_run_scenario_reproducible_with_seed():
     n, m, d, x = 600, 4, 15, 4
