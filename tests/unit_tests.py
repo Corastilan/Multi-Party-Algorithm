@@ -71,3 +71,6 @@ class TestProtocolComponents(unittest.TestCase):
             self.fail(f"Simulation failed security check: {e}")
         except Exception as e:
             self.fail(f"Simulation crashed with unexpected error: {e}")
+
+if __name__ == "__main__":
+    unittest.main()
