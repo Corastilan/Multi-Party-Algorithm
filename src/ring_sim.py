@@ -37,17 +37,10 @@ class AsynchronousNetwork:
 
 class RingParty:
     """
-    Represents a single participant (node) in the decentralized OTP ring.
-    Responsibilities:
-    1. Local State Management: Tracks the party's current pointer (my_index)
-       within the N-sized cryptographic buffer.
-    2. Distributed Awareness: Maintains a 'view_of_others' dictionary, which
-       is a local map of all other parties' positions.
-    3. Asynchronous Handling: Updates the local map only when a broadcast
-       is received from the network, simulating real-world communication lag.
-    4. Security Enforcement: Used by the main logic to ensure a safety
-       buffer (D) exists between this party's pointer and the last known
-       positions of its neighbors.
+    Represents a single node in the OTP ring. Tracks the positions of
+    all nodes in the ring through view_of_others and my_index. Updates
+    positions when receiving broadcast messages. Ensures there exists a
+    gap of D between my_index and last position of neighbours
     """
     def __init__(self, party_id, n, m, d):
         self.party_id = party_id
@@ -62,19 +55,17 @@ class RingParty:
 
 def run_scenario(n, m, d, x):
     """
-    Main simulation loop for a specific Ring configuration.
+    Simulation loop for a specific ring configuration.
+    1. Initializes party positions and categorizes as 'Active' and 'Silent' parties.
+    2. Uses a burned set to track used OTPs
+    3. Moves are categorized into three types:
+        - 'Data': Active senders consume fresh pads if the gap is safe
+        - 'Drift': Senders skip used pads to find fresh ones
+        - 'Yield': Silent parties jump forward to clear space for others
+    4. Terminates when a 'Clinch' state is reached, i.e., no one can move and no broadcasts
+    are pending.
 
-    Logic Flow:
-    1. Initialization: Spaces parties equally and identifies 'Active' vs 'Silent'.
-    2. The Burned set: Initializes a set to track used OTPs.
-    3. Priority-Based Execution:
-       - Priority 1 (Data): Active senders consume fresh pads if the gap is safe.
-       - Priority 2 (Drift): Senders skip 'Dead' pads to find fresh ones.
-       - Priority 3 (Yield): Silent parties jump forward to clear space for others.
-    4. Termination: Breaks when a 'Clinch' state is reached (no one can move
-       and no broadcasts are pending).
-
-    Returns: The count of wasted (unused) pads.
+    Returns the count of unused pads.
     """
     network = AsynchronousNetwork(d)
     all_ids = list(range(1, m + 1))
@@ -121,6 +112,9 @@ def run_scenario(n, m, d, x):
 
             parties[sid].my_index = nxt
             if status == 'data':
+                if nxt in burned:
+                    # This is a 'Loud Fail' - it proves a security breach occurred
+                    raise RuntimeError(f"CRITICAL SECURITY FAILURE: Pad index {nxt} reused!")
                 burned.add(nxt)
                 parties[sid].pads_used += 1
 
