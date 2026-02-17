@@ -1,6 +1,6 @@
 ## Adaptive Boundary Protocol
 
-Currently a work in progress. Check the list of issues to see what needs to be implemented.
+Original attempt of our algorithm. Eventually replaced with the ring buffer approach. This is only kept here for reference purposes
 
 Implementation of the third algorithm. Check [here](TeX/Adaptive_Boundary_Protocol.pdf) for details.
 
