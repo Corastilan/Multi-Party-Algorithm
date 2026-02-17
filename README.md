@@ -1,6 +1,6 @@
 ## Adaptive Boundary Protocol
 
-Currently a work in progress. Check the list of issues to see what needs to be implemented.
+First attempt at creating an algorithm. This was eventually built upon to create our ring simulation.
 
 Implementation of the third algorithm. Check [here](TeX/Adaptive_Boundary_Protocol.pdf) for details.
 
