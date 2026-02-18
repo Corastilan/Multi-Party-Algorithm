@@ -10,9 +10,9 @@ Click here to view the [document](docs/Ring_Simulation.pdf)
 **Team Members:** Nithesh Gurudaas Kujuluva Ganesh, Andy Then, Raffael Davila
 
 **Task Distribution**
-- Nithesh Gurudaas Kujuluva Ganesh:
-- Andy Then:
-- Raffael Davila:
+- Nithesh Gurudaas Kujuluva Ganesh: Tests/Documentation/Protocol
+- Andy Then: Tests/Documentation/Protocol 
+- Raffael Davila: Tests/Documentation/Protocol
 
 **Choice of m**
 
