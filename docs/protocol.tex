@@ -1,0 +1,190 @@
+\documentclass{article}
+\usepackage{algorithm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algpseudocode}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\geometry{margin=1in}
+\usepackage{graphicx}
+
+\title{\includegraphics[width=1.5cm]{tandon.jpg} \\ Cooperative OTP Ring Simulation}
+
+\author{Nithesh Gurudaas Kujuluva Ganesh, Raffael Davila, Andy Then}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+
+\section{Overview}
+
+This document describes a simulation of a cooperative one-time pad (OTP) ring protocol
+operating over an asynchronous network. The simulation models $m$ parties arranged in a
+logical ring, each maintaining a pointer into a shared pad of length $n$, subject to a
+minimum gap constraint $d$ enforced between adjacent parties. The key question studied
+is: how many pads are wasted (i.e.\ left unused) when only $x$ out of $m$ parties are
+actively sending?
+
+\section{System Components}
+
+\subsection{Asynchronous Network}
+
+The \texttt{AsynchronousNetwork} class simulates a broadcast medium with variable
+delivery delay. Each broadcast from a sender arrives at all other nodes within a
+uniformly random delay of $[0,\, d_{\mathrm{delay}}]$ ticks. The global clock advances
+by one unit per call to \texttt{tick}, which delivers all messages whose scheduled
+arrival time has been reached and updates the recipient parties' views accordingly.
+
+Formally, when party $i$ broadcasts its new index $\mathit{idx}$ at time $t$, each
+recipient $j \neq i$ receives the update at time:
+\[
+  t_{\mathrm{deliver}} = t + \delta, \quad \delta \sim \mathcal{U}\{0,\, d_{\mathrm{delay}}\}.
+\]
+
+\subsection{Ring Party}
+
+Each \texttt{RingParty} represents a node in the ring with the following state:
+
+\begin{itemize}
+  \item $\mathtt{my\_index}$: the party's current position in the pad array, initialised to
+    $(\mathtt{party\_id} - 1) \cdot \lfloor n/m \rfloor$.
+  \item $\mathtt{view\_of\_others}$: a dictionary mapping each party ID to its last
+    known index, initialised to the same evenly-spaced starting positions.
+  \item $\mathtt{pads\_used}$: a counter of pad indices this party has consumed for
+    encryption.
+\end{itemize}
+
+The gap constraint requires that a party may only advance if the distance to its
+forward neighbor (modulo $n$) exceeds $d$:
+\[
+  \mathtt{gap} = (\mathtt{neighbor\_pos} - \mathtt{my\_index}) \bmod n > d.
+\]
+
+\section{Simulation Protocol}
+
+\subsection{Initialisation}
+
+Given parameters $n$, $m$, $d$, and $x$, the simulation proceeds as follows:
+
+\begin{itemize}
+  \item $x$ parties are designated \emph{active} (chosen uniformly at random); the
+    remaining $m - x$ are \emph{silent}.
+  \item A \emph{burned} set tracks pad indices that have been consumed. It is
+    initialised with the starting positions of all active parties.
+  \item The theoretical maximum utilisation is $n - m \cdot d$, accounting for the
+    mandatory gaps between all $m$ parties.
+\end{itemize}
+
+\subsection{Move Classification}
+
+At each tick, the eligibility of each party to advance is determined by
+\texttt{get\_move\_status}, which returns one of three outcomes:
+
+\begin{description}
+  \item[\texttt{data}] The gap constraint is satisfied and the next index is fresh
+    (not burned). The party encrypts a message, burns the pad, and increments
+    $\mathtt{pads\_used}$.
+  \item[\texttt{drift}] The gap constraint is satisfied but the next index is already
+    burned. The party advances without consuming a new pad (skipping over a used index).
+  \item[\texttt{None}] The gap constraint is violated; the party is blocked and cannot
+    move.
+\end{description}
+
+\subsection{Scheduling Policy}
+
+Each tick applies a two-priority scheduling rule:
+
+\begin{enumerate}
+  \item \textbf{Active parties have priority.} Any active party that is not blocked
+    may move. One such party is chosen uniformly at random, advances its index,
+    and broadcasts its new position.
+  \item \textbf{Silent parties move only when no active party can.} If all active
+    parties are blocked, a random unblocked silent party performs a \emph{yield}
+    move: it advances without burning and broadcasts, thereby clearing space for
+    active neighbours.
+\end{enumerate}
+
+\subsection{Termination}
+
+The simulation terminates when either:
+\begin{itemize}
+  \item the burned set reaches the maximum utilisation $n - m \cdot d$, or
+  \item no party can move \emph{and} the network message queue is empty (\emph{Clinch} state).
+\end{itemize}
+The function returns $n - |\mathtt{burned}|$, the count of unused pad indices.
+
+\section{Algorithm}
+
+\begin{algorithm}
+\caption{Cooperative OTP Ring Simulation}
+\begin{algorithmic}[1]
+\State \textbf{Input:} pad length $n$, party count $m$, gap bound $d$, active count $x$
+\State \textbf{Output:} number of unused pad indices
+
+\State Initialise \textsc{Network} with delay $d$
+\State Sample active set $A \subseteq \{1,\ldots,m\}$, $|A| = x$; silent set $S = \{1,\ldots,m\} \setminus A$
+\State Initialise parties: $\mathtt{pos}[i] \gets (i-1)\lfloor n/m \rfloor$ for all $i$
+\State $\mathtt{burned} \gets \{\mathtt{pos}[i] : i \in A\}$
+\State $\mathtt{MAX} \gets n - m \cdot d$
+
+\While{$|\mathtt{burned}| < \mathtt{MAX}$}
+  \State \textsc{Network.Tick}(parties) \Comment{Deliver pending messages, update views}
+  \State $\mathtt{movers} \gets \{i \in A : \textsc{GapOK}(i)\}$
+  \If{$\mathtt{movers} \neq \emptyset$}
+    \State $i \gets \textsc{RandomChoice}(\mathtt{movers})$
+    \State $\mathtt{nxt} \gets (\mathtt{pos}[i] + 1) \bmod n$
+    \State $\mathtt{pos}[i] \gets \mathtt{nxt}$
+    \If{$\mathtt{nxt} \notin \mathtt{burned}$}
+      \State $\mathtt{burned} \gets \mathtt{burned} \cup \{\mathtt{nxt}\}$ \Comment{\textbf{data} move}
+    \Else
+      \State \Comment{\textbf{drift} move; pad already used}
+    \EndIf
+    \State \textsc{Network.Broadcast}$(i,\, \mathtt{nxt})$
+  \Else
+    \State $\mathtt{jumpers} \gets \{j \in S : \textsc{GapOK}(j)\}$
+    \If{$\mathtt{jumpers} \neq \emptyset$}
+      \State $j \gets \textsc{RandomChoice}(\mathtt{jumpers})$
+      \State $\mathtt{pos}[j] \gets (\mathtt{pos}[j] + 1) \bmod n$
+      \State \textsc{Network.Broadcast}$(j,\, \mathtt{pos}[j])$ \Comment{\textbf{yield} move}
+    \Else
+      \If{\textsc{Network.QueueEmpty}()}
+        \State \textbf{break} \Comment{Clinch state reached}
+      \EndIf
+    \EndIf
+  \EndIf
+\EndWhile
+
+\State \Return $n - |\mathtt{burned}|$
+
+\Procedure{GapOK}{$i$}
+  \State $\mathtt{fwd} \gets (i \bmod m) + 1$
+  \State \Return $(\mathtt{view}[i][\mathtt{fwd}] - \mathtt{pos}[i]) \bmod n > d$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\section{Experimental Setup}
+
+The simulation is run for $M \in \{3, 4\}$ parties with fixed parameters $N = 2000$
+and $D = 15$. For each value of $M$, every scenario $S.x$ (for $x = 1, \ldots, M$)
+is repeated over 50 independent trials. The reported metrics are:
+
+\begin{itemize}
+  \item \textbf{Average wasted pads}: $\mathbb{E}[n - |\mathtt{burned}|]$ across trials.
+  \item \textbf{Utilisation}: $\left(1 - \frac{\mathbb{E}[\text{wasted}]}{n}\right) \times 100\%$.
+\end{itemize}
+
+Scenario $S.x$ denotes the case where exactly $x$ out of $M$ parties are active
+senders; the remaining $M - x$ parties are silent and only perform yield moves to
+vacate space.
+
+\section{Security Property}
+
+The simulation includes a \emph{loud-fail} check: if an active party attempts a
+\textbf{data} move onto an index already present in \texttt{burned}, a
+RuntimeError is raised immediately. This guarantees that pad reuse is detectable at simulation time.
+
+\end{document}
