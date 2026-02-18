@@ -1,7 +1,4 @@
-# 4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
-
-## 1. Title
-4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
+## 1. 4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
 
 ## 2. Introduction
 
