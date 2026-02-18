@@ -3,7 +3,7 @@ import random
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.ring_sim import run_scenario
+from ring_sim import run_scenario
 
 
 def test_run_scenario_reproducible_with_seed():
