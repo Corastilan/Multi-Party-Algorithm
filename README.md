@@ -1,5 +1,10 @@
 ## 1. 4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
 
+Notes:
+- The tests are decentralized in a unit test fashion, the commands to run them are explained below
+- We implore that you go through both the README and the report PDF
+- We have attempted the extra credit to generalize our solution, hence the main block in the protocol runs simulations for both 3 and 4 party scenarios
+
 ## 2. Introduction
 
 Click here to view the [document](KujuluvaGanesh_Then_Davila-4-report.pdf)
@@ -97,7 +102,7 @@ The ring_sim.py file contains a test to run the simulation 50 times per scenario
 Scenarios include both 3 party and 4 party rings, with variable number of senders between 1 and M (3 or 4).
 
 ```commandline
-python3 ring_sim.py
+python3 KujuluvaGanesh_Then_Davila_4_protocol.py
 ```
 
 Results of the program would be grouped according to M (Number of parties involved), then split by X (number of active senders)
@@ -107,6 +112,11 @@ Results of the program would be grouped according to M (Number of parties involv
 We have also implemented multiple unit test cases which can be run with the command:
 ```commandline
 pytest -q
+```
+
+If pytest is not installed:
+```commandline
+pip3 install pytest
 ```
 
 The above command could throw an error in case of a Python version mismatch. In such a case, the below command should work:
