@@ -5,7 +5,4 @@ latex/
 xml/
 crypto/
 __pycache__/
-<<<<<<< HEAD
 .pytest_cache
-=======
->>>>>>> flexi-boundary
