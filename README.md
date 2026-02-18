@@ -1,7 +1,4 @@
-# 4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
-
-## 1. Title
-4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
+## 1. 4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
 
 ## 2. Introduction
 
@@ -132,4 +129,8 @@ Testing scenarios include tests to:
 
 1. The static split algorithm splits the pads into 4 parts, and when one party exhausts all their OTPs, they would request a new set of OTPs. This results in 75% wastage.
 2. A two-sided countdown algorithm was discussed early on, where party 1 counts up from 0 to N/2, party 2 counts down from N/2 to 0; vice versa for parties 3 and 4. This however results in ~50% wastage.
+<<<<<<< HEAD
 3. Divide the pad sequence into overlapping segments with a round-robin priority system and look-ahead buffering, which resulted in 66% wastage.
+=======
+3. Divide the pad sequence into overlapping segments with a round-robin priority system and look-ahead buffering, which resulted in 66% wastage.
+>>>>>>> df4b5a94b882ab183679ff319aefe725b241dbbb
