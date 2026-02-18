@@ -1,11 +1,11 @@
 *.DS_STORE
-directional_protocol
 
-*.o
 html/
-Doxyfile
 latex/
 xml/
 crypto/
 __pycache__/
+<<<<<<< HEAD
 .pytest_cache
+=======
+>>>>>>> flexi-boundary
