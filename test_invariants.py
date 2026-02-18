@@ -2,7 +2,7 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ring_sim import run_scenario
+from KujuluvaGanesh_Then_Davila_4_protocol import run_scenario
 
 
 def test_waste_within_bounds():

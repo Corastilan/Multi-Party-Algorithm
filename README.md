@@ -2,7 +2,7 @@
 
 ## 2. Introduction
 
-Click here to view the [document](docs/Ring_Simulation.pdf)
+Click here to view the [document](KujuluvaGanesh_Then_Davila-4-report.pdf)
 
 **Team Members:** Nithesh Gurudaas Kujuluva Ganesh, Andy Then, Raffael Davila
 
@@ -81,7 +81,7 @@ WHILE simulation_is_active:
 
 ## 5. Proof Intuition
 
-Please see the [pdf](docs/Ring_Simulation.pdf) For a detailed and mathematically rigorous proof and perfect secrecy.
+Please see the [pdf](KujuluvaGanesh_Then_Davila-4-report.pdf) For a detailed and mathematically rigorous proof and perfect secrecy.
 
 ### 5.1 Perfect Secrecy
 

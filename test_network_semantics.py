@@ -3,7 +3,7 @@ import random
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ring_sim import AsynchronousNetwork, RingParty
+from KujuluvaGanesh_Then_Davila_4_protocol import AsynchronousNetwork, RingParty
 
 
 def test_network_delivery_time_and_no_self_update(monkeypatch):
