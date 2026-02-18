@@ -93,3 +93,43 @@ Secrecy is maintained by the **Global Burned Set Invariant**. Since every party 
 ### 5.2 Collision Avoidance (d-Invariant)
 
 Let Pos_A(t) be the actual position of Party A and View_B(A, t) be Party B's view of A. Because the network delay is <= d, Pos_A(t) >= View_B(A, t). By enforcing Gap > d, Party B ensures that even if Party A has moved forward d steps without Bob knowing, their actual positions still do not overlap.
+
+## 6. Testing
+
+The ring_sim.py file contains a test to run the simulation 50 times per scenario and calculate the average number of wasted pads.
+Scenarios include both 3 party and 4 party rings, with variable number of senders between 1 and M (3 or 4).
+
+```commandline
+python3 ring_sim.py
+```
+
+Results of the program would be grouped according to M (Number of parties involved), then split by X (number of active senders)
+
+![Output_ss](ring_sim_ss.png)
+
+We have also implemented multiple unit test cases which can be run with the command:
+```commandline
+pytest -q
+```
+
+To test the ring simulation in different scenarios, you can use the run_scenario function, and call it with the following commands:
+- N : Number of Pads
+- M : Number of Parties involved
+- D : Number of undelivered messages/network latency
+- X : Number of "Active Parties" or parties that are allowed to send messages
+
+Testing scenarios include tests to:
+
+1. Verify that the gap calculation handles the ring wrap-around correctly.
+2. Verify that messages are only delivered after a tick and not instantly.
+3. Ensure the 'data' status is never granted for a burned index.
+4. Run a full scenario and assert that no security exceptions are raised during execution.
+5. Test latency impact on protocol performance 
+6. Test protocol performance with large population
+7. Testing invariants and determinism
+
+## 7. Comparisons with other algorithms
+
+1. The static split algorithm splits the pads into 4 parts, and when one party exhausts all their OTPs, they would request a new set of OTPs. This results in 75% wastage.
+2. A two-sided countdown algorithm was discussed early on, where party 1 counts up from 0 to N/2, party 2 counts down from N/2 to 0; vice versa for parties 3 and 4. This however results in ~50% wastage.
+3. Divide the pad sequence into overlapping segments with a round-robin priority system and look-ahead buffering, which resulted in 66% wastage.
