@@ -1,22 +1,3 @@
-<<<<<<< HEAD
-## Adaptive Boundary Protocol
-
-First attempt at creating an algorithm. This was eventually built upon to create our ring simulation.
-
-Implementation of the third algorithm. Check [here](TeX/Adaptive_Boundary_Protocol.pdf) for details.
-
-Dependencies: 
-Python interpreter (3.10 or higher preferred)
-Pytest 
-
-# Pytest
-simply run the following:
-```bash
-pytest
-```
-
-All tests should run. If not, cd into tests/
-=======
 # 4-Party Asynchronous Communication with Perfect Secrecy based on Cooperative Global Ring Shifting
 
 ## 1. Title
@@ -112,4 +93,3 @@ Secrecy is maintained by the **Global Burned Set Invariant**. Since every party 
 ### 5.2 Collision Avoidance (d-Invariant)
 
 Let Pos_A(t) be the actual position of Party A and View_B(A, t) be Party B's view of A. Because the network delay is <= d, Pos_A(t) >= View_B(A, t). By enforcing Gap > d, Party B ensures that even if Party A has moved forward d steps without Bob knowing, their actual positions still do not overlap.
->>>>>>> flexi-boundary
