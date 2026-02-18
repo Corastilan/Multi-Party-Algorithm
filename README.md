@@ -109,6 +109,11 @@ We have also implemented multiple unit test cases which can be run with the comm
 pytest -q
 ```
 
+The above command could throw an error in case of a Python version mismatch. In such a case, the below command should work:
+```commandline
+python3 -m pytest -q
+```
+
 To test the ring simulation in different scenarios, you can use the run_scenario function, and call it with the following commands:
 - N : Number of Pads
 - M : Number of Parties involved
